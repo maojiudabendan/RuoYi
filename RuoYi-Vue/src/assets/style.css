@@ -1,0 +1,250 @@
+/* ============================================================
+   style.css —— 所有页面的「外观」样式（颜色、布局、动画）
+   本主题叫"深色护眼模式"：背景偏暗、文字不是纯白，看久了不刺眼。
+   服务于：登录页、注册页、登录后空壳欢迎页。
+   由原 RuoYi/login-app/web/style.css 整体迁移，未改任何视觉。
+   ============================================================ */
+
+/* ===== 全局变量（:root 里定义的变量，整份样式表都能用）===== */
+:root {
+  --bg:        #0e1117;   /* 主背景：近黑的深蓝灰 */
+  --bg-soft:   #141a23;   /* 次级背景 */
+  --panel:     #18202b;   /* 卡片/面板底色 */
+  --panel-2:   #1f2935;   /* 悬浮面板 */
+  --border:    #2a3340;   /* 描边/分割线颜色 */
+  --text:      #e6eaf0;   /* 主文字（接近白但不是纯白，护眼） */
+  --muted:     #8b95a7;   /* 次要文字（提示、说明） */
+  --accent:    #5eead4;   /* 主强调色：青绿 */
+  --accent-2:  #818cf8;   /* 次强调色：靛蓝 */
+  --accent-3:  #f0a8d0;   /* 柔粉色，用于标签 */
+  --danger:    #f87171;   /* 错误/警告用的红色 */
+  --radius:    16px;      /* 圆角大小 */
+  --shadow:    0 10px 40px rgba(0,0,0,.45); /* 阴影 */
+  --ease:      cubic-bezier(.22,.61,.36,1); /* 动画缓动曲线，让过渡更自然 */
+  --card-bg:   linear-gradient(160deg, rgba(31,41,53,.92), rgba(20,26,35,.92)); /* 卡片背景渐变 */
+}
+
+/* ===== 明亮主题 =====
+   当网页根元素带上 data-theme="light" 时（由 JS 切换），就用下面这组亮色。
+   默认还是深色，这里只是"备用皮肤"。 */
+[data-theme="light"] {
+  --bg:      #eef1f6;
+  --bg-soft: #e4e9f1;
+  --panel:   #ffffff;
+  --panel-2: #f1f4f9;
+  --border:  #d3dae6;
+  --text:    #1b2230;
+  --muted:   #5d6878;
+  --card-bg: rgba(255,255,255,.96);
+}
+/* 亮色模式下，背景和彩球也调淡一点 */
+[data-theme="light"] .bg-aurora {
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(94,234,212,.16), transparent 60%),
+    radial-gradient(1000px 500px at 85% 90%, rgba(129,140,248,.18), transparent 60%),
+    linear-gradient(135deg, #eef1f6, #e6ebf3);
+  animation: none; /* 亮色下不做色相动画，更安静 */
+}
+[data-theme="light"] .blob { opacity: .22; }
+
+/* ===== 基础重置 ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* 整个页面的字体、颜色、背景、滚动条 */
+html, body {
+  height: 100%;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden; /* 不出现整页滚动条，内部区域各自滚动 */
+}
+
+#app {
+  height: 100%;
+}
+
+/* ===================== 动态背景 ===================== */
+.bg-aurora {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(94,234,212,.08), transparent 60%),
+    radial-gradient(1000px 500px at 85% 90%, rgba(129,140,248,.10), transparent 60%),
+    linear-gradient(135deg, #0e1117, #0b0e14);
+  animation: hue 18s ease-in-out infinite alternate; /* 缓慢变化的色相动画 */
+}
+@keyframes hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(18deg); } }
+
+.bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+.blob {
+  position: absolute; border-radius: 50%;
+  filter: blur(70px); opacity: .35;
+  animation: float 16s ease-in-out infinite;
+}
+.b1 { width: 380px; height: 380px; background: #16c2a3; top: -80px; left: -60px; }
+.b2 { width: 420px; height: 420px; background: #6d5ef0; bottom: -120px; right: -80px; animation-delay: -5s; }
+.b3 { width: 300px; height: 300px; background: #c25ec0; top: 40%; left: 55%; animation-delay: -9s; }
+@keyframes float {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(30px,-40px) scale(1.12); }
+}
+
+/* ===================== 登录/注册视图 ===================== */
+.login-view {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .6s var(--ease), transform .6s var(--ease), filter .6s var(--ease);
+}
+.login-view.gone {
+  opacity: 0; transform: scale(1.05); filter: blur(8px);
+  pointer-events: none;
+}
+
+.login-card {
+  width: 380px; max-width: 90vw;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 34px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  animation: cardIn .8s var(--ease) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(40px) rotateX(8deg); }
+  to   { opacity: 1; transform: translateY(0)    rotateX(0); }
+}
+
+.brand { text-align: center; margin-bottom: 28px; animation: fadeUp .8s .15s var(--ease) both; }
+.logo {
+  width: 56px; height: 56px; margin: 0 auto 14px;
+  display: grid; place-items: center;
+  font-size: 28px; font-weight: 800; color: #0e1117;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(94,234,212,.35);
+  animation: pop 1s var(--ease) both;
+}
+@keyframes pop { 0%{transform:scale(.5);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.brand h1 { font-size: 26px; letter-spacing: 2px; }
+.subtitle { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+.field {
+  position: relative; margin-bottom: 26px;
+  animation: fadeUp .8s .3s var(--ease) both;
+}
+.field input {
+  width: 100%; padding: 14px 12px 8px;
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 15px;
+  border-bottom: 1px solid var(--border);
+}
+.field label {
+  position: absolute; left: 12px; top: 14px;
+  color: var(--muted); font-size: 15px;
+  pointer-events: none; transition: .25s var(--ease);
+}
+.field input:focus + label,
+.field input:not(:placeholder-shown) + label {
+  top: -8px; font-size: 12px; color: var(--accent);
+}
+.field .line {
+  position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .3s var(--ease);
+}
+.field input:focus ~ .line { width: 100%; }
+
+.login-error {
+  color: var(--danger); font-size: 13px; min-height: 18px;
+  margin-bottom: 8px; text-align: center;
+  animation: shake .4s;
+}
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+.btn-primary {
+  width: 100%; padding: 13px; border: none; cursor: pointer;
+  font-size: 16px; font-weight: 600; letter-spacing: 4px; color: #0e1117;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 12px; position: relative; overflow: hidden;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+  animation: fadeUp .8s .45s var(--ease) both;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(94,234,212,.35); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary::after {
+  content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer 3.5s infinite;
+}
+@keyframes shimmer { 0%{left:-120%} 50%{left:140%} 100%{left:140%} }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.hint { color: var(--muted); font-size: 12px; text-align: center; margin-top: 16px;
+  animation: fadeUp .8s .6s var(--ease) both; }
+
+.auth-form { animation: fadeUp .5s var(--ease) both; }
+.auth-form.hidden-form { display: none; }
+.switch-link { color: var(--muted); font-size: 13px; text-align: center; margin-top: 16px; }
+.switch-link a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; }
+.switch-link a:hover { text-decoration: underline; }
+
+.remember {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--muted); font-size: 13px; margin: -6px 0 14px; cursor: pointer;
+  user-select: none; animation: fadeUp .8s .4s var(--ease) both;
+}
+.checkbox { position: relative; width: 18px; height: 18px; flex-shrink: 0; }
+.checkbox input { display: none; }
+.checkbox i {
+  position: absolute; inset: 0; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--panel);
+  transition: .2s var(--ease);
+}
+.checkbox i::after {
+  content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px;
+  border: solid #0e1117; border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0);
+  transition: transform .2s var(--ease);
+}
+.checkbox input:checked + i { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; }
+.checkbox input:checked + i::after { transform: rotate(45deg) scale(1); }
+
+.avatar {
+  display: grid; place-items: center; border-radius: 50%;
+  font-weight: 700; color: #0e1117; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.avatar.big { width: 64px; height: 64px; font-size: 26px; box-shadow: 0 8px 24px rgba(94,234,212,.3); }
+.avatar.small { width: 30px; height: 30px; font-size: 14px; }
+.avatar:hover { transform: translateY(-3px) scale(1.05); }
+
+/* ===================== 登录后空壳欢迎页 ===================== */
+.welcome-shell {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: scale(.98);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.welcome-shell.show { opacity: 1; transform: scale(1); }
+.hidden { display: none; }
+
+.welcome-card {
+  width: 380px; max-width: 90vw;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 44px 34px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  animation: cardIn .8s var(--ease) both;
+}
+.welcome-card .brand { margin-bottom: 22px; }
+.welcome-card .avatar.big { margin: 0 auto; }
+.welcome-greet { font-size: 24px; margin: 18px 0 6px; }
+.welcome-sub { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+.welcome-card .btn-primary { letter-spacing: 6px; }
+
+/* 通用淡入上移动画 */
+@keyframes fadeUp { from { opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
